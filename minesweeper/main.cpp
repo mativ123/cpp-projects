@@ -5,6 +5,22 @@
 
 #include "inc.h"
 
+std::vector<int> convertToList(std::string s, std::string delimiter)
+{
+    std::vector<int> result;
+
+    size_t pos = 0;
+    std::string token;
+    while ((pos = s.find(delimiter)) != std::string::npos) {
+        token = s.substr(0, pos);
+        result.push_back(stoi(token));
+        s.erase(0, pos + delimiter.length());
+    }
+    result.push_back(stoi(s));
+
+    return result;
+}
+
 std::vector<std::vector<int>> sourroundMines(std::vector<std::vector<int>> boardVector, int width, int height)
 {
     for(int i{0}; i<boardVector.size(); ++i)
@@ -58,21 +74,93 @@ std::vector<std::vector<int>> sourroundMines(std::vector<std::vector<int>> board
     return boardVector;
 }
 
+void printBoard(std::vector<std::vector<int>> balls, int mines, int width, int height, std::vector<std::vector<bool>> revealed)
+{
+    std::cout << "mines: " << (static_cast<float>(mines)/(static_cast<float>(width)*static_cast<float>(height)))*100 << "%\n";
+
+    balls = sourroundMines(balls, width, height);
+
+    for(int i{0}; i<height; ++i)
+    {
+        if(i==0)
+        {
+            std::cout << "\t";
+        }
+        std::cout << i << ", \t";
+        if(i==height-1)
+        {
+            std::cout << '\n';
+        }
+    }
+
+    for (int i{0}; i<balls.size(); ++i)
+    {
+        std::cout << i << ", \t";
+        for (int j{0}; j<balls[i].size(); ++j)
+        {
+            if(revealed[i][j])
+            {
+                if(balls[i][j] == 9)
+                {
+                    std::cout << "x, \t";
+                } else
+                {
+                    std::cout << balls[i][j] << ", \t";
+                }
+            } else
+            {
+                std::cout << "H, \t";
+            }
+        }
+        std::cout << '\n';
+    }
+}
+
 int main()
 {
-    std::vector<std::vector<int>> balls {};
-
-    std::cout << "width: ";
     int height{};
-    std::cin >> height; 
-
-    std::cout << "height: ";
     int width{};
-    std::cin >> width; 
-
-    std::cout << "mines: ";
     int mines{};
-    std::cin >> mines; 
+    std::vector<std::vector<int>> balls {};
+    std::vector<std::vector<bool>> revealed {};
+
+    std::cout << "[1]Small: 8x8, 10 mines | [2]Medium: 16x16, 40 mines | [3]Big: 30x16, 99 mines | [4]Custom\nChoose board: ";
+    int choice{0};
+    while(true)
+    {
+        std::cin >> choice;
+        switch(choice)
+        {
+            case(1):
+                height = 8;
+                width = 8;
+                mines = 10;
+                break;
+            case(2):
+                height = 16;
+                width = 16;
+                mines = 40;
+                break;
+            case(3):
+                height = 30;
+                width = 16;
+                mines = 99;
+                break;
+            case(4):
+                std::cout << "width: ";
+                std::cin >> height; 
+
+                std::cout << "height: ";
+                std::cin >> width; 
+
+                std::cout << "mines: ";
+                std::cin >> mines; 
+                break;
+            default:
+                continue;
+        }
+        break;
+    }
     while (mines > width*height || mines < 0)
     {
         std::cout << "Error: invalid number of mines-> " << mines << "\nmines: ";
@@ -84,9 +172,11 @@ int main()
     for (int x{0}; x<width; ++x)
     {
         balls.push_back(std::vector<int>());
+        revealed.push_back(std::vector<bool>());
         for (int y{0}; y<height; ++y)
         {
             balls[x].push_back(0);
+            revealed[x].push_back(false);
         }
     }
 
@@ -135,24 +225,27 @@ int main()
         }
     }
 
-    std::cout << "mines: " << (static_cast<float>(mines)/(static_cast<float>(width)*static_cast<float>(height)))*100 << "%\n";
+    printBoard(balls, mines, width, height, revealed);
 
-    balls = sourroundMines(balls, width, height);
-
-    for (int i{0}; i<balls.size(); ++i)
+    bool running{true};
+    while(running)
     {
-        for (int j{0}; j<balls[i].size(); ++j)
+        std::cout << "Format: x,y\nPosition to be revealed: ";
+        std::string revealPosInput{};
+        std::getline(std::cin >> std::ws, revealPosInput);
+        std::string delimiter = ",";
+        std::vector<int> revealPos = convertToList(revealPosInput, delimiter);
+        revealed[revealPos[0]][revealPos[1]] = true;
+
+        printBoard(balls, mines, width, height, revealed);
+
+        if(balls[revealPos[0]][revealPos[1]] == 9)
         {
-            if(balls[i][j] == 9)
-            {
-                std::cout << "x, \t";
-            } else
-            {
-                std::cout << balls[i][j] << ", \t";
-            }
+            std::cout << "You picked a mine and died!!!!";
+            running = false;
         }
-        std::cout << '\n';
     }
 
     return 0;
 }
+

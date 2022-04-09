@@ -1,5 +1,0 @@
-clang
-
-%h -x
-%h c++-header
-%cpp -std=c++17
