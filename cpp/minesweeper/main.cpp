@@ -28,7 +28,7 @@ std::vector<std::vector<int>> sourroundMines(std::vector<std::vector<int>> board
         for(int j{0}; j<boardVector[i].size(); ++j)
         {
             int mineCount{0};
-            if(i==0 || i==width-1 || j==0 || j==height-1 || boardVector[i][j]==9)
+            if(i==0 || i==width || j==0 || j==height || boardVector[i][j]==9)
             {
                 continue;
             } else
@@ -65,9 +65,8 @@ std::vector<std::vector<int>> sourroundMines(std::vector<std::vector<int>> board
                 {
                     ++mineCount;
                 }
-
-                boardVector[i][j]=mineCount;
             }
+            boardVector[i][j]=mineCount;
         }
     }
 
@@ -98,22 +97,53 @@ void printBoard(std::vector<std::vector<int>> balls, int mines, int width, int h
         std::cout << i << ", \t";
         for (int j{0}; j<balls[i].size(); ++j)
         {
-            if(revealed[i][j])
-            {
+            //if(revealed[i][j])
+            //{
                 if(balls[i][j] == 9)
                 {
-                    std::cout << "x, \t";
-                } else
+                    std::cout << "\033[31mx, \033[0m\t";
+                } else if(balls[i][j] == 0)
                 {
-                    std::cout << balls[i][j] << ", \t";
+                    std::cout << "\033[32m" << balls[i][j] << ", \033[0m\t";
+                } else if(balls[i][j] == 1)
+                {
+                    std::cout << "\033[33m" << balls[i][j] << ", \033[0m\t";
+                } else if(balls[i][j] == 2)
+                {
+                    std::cout << "\033[34m" << balls[i][j] << ", \033[0m\t";
+                } else if(balls[i][j] == 3)
+                {
+                    std::cout << "\033[35m" << balls[i][j] << ", \033[0m\t";
+                } else if(balls[i][j] == 4)
+                {
+                    std::cout << "\033[35m" << balls[i][j] << ", \033[0m\t";
+                } else if(balls[i][j] == 5)
+                {
+                    std::cout << "\033[36m" << balls[i][j] << ", \033[0m\t";
+                } else if(balls[i][j] == 6)
+                {
+                    std::cout << "\033[93m" << balls[i][j] << ", \033[0m\t";
+                } else if(balls[i][j] == 7)
+                {
+                    std::cout << "\033[95m" << balls[i][j] << ", \033[0m\t";
+                } else if(balls[i][j] == 8)
+                {
+                    std::cout << "\033[31m" << balls[i][j] << ", \033[0m\t";
                 }
-            } else
-            {
-                std::cout << "H, \t";
-            }
+            //} else
+            //{
+                //std::cout << "H, \t";
+            //}
         }
         std::cout << '\n';
     }
+}
+
+std::vector<std::vector<bool>> openFree(std::vector<std::vector<int>> balls, std::vector<std::vector<bool>> revealed, std::vector<int> revealPos)
+{
+    std::cout << "balls";
+
+    return revealed;
 }
 
 int main()
@@ -169,11 +199,11 @@ int main()
     
     std::cout << width << 'x' << height << '\n';
 
-    for (int x{0}; x<width; ++x)
+    for (int x{0}; x<width+1; ++x)
     {
         balls.push_back(std::vector<int>());
         revealed.push_back(std::vector<bool>());
-        for (int y{0}; y<height; ++y)
+        for (int y{0}; y<height+1; ++y)
         {
             balls[x].push_back(0);
             revealed[x].push_back(false);
@@ -187,8 +217,8 @@ int main()
         std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
 
         // Create a reusable random number generator that generates uniform numbers between 1 and 6
-        std::uniform_int_distribution heightChance{ 0, height-1};
-        std::uniform_int_distribution widthChance{ 0, width-1};
+        std::uniform_int_distribution heightChance{ 1, height-1};
+        std::uniform_int_distribution widthChance{ 1, width-1};
 
         for (int i{0}; i<mines; ++i)
         {
@@ -237,13 +267,19 @@ int main()
         std::vector<int> revealPos = convertToList(revealPosInput, delimiter);
         revealed[revealPos[0]][revealPos[1]] = true;
 
-        printBoard(balls, mines, width, height, revealed);
-
         if(balls[revealPos[0]][revealPos[1]] == 9)
         {
-            std::cout << "You picked a mine and died!!!!";
+            std::cout << "You picked a mine and died!!!!\n";
+            for(int x = 0; x<balls.size(); ++x)
+            {
+                for(int y = 0; y<balls[x].size(); ++y)
+                {
+                    revealed[x][y] = true;
+                }
+            }
             running = false;
         }
+        printBoard(balls, mines, width, height, revealed);
     }
 
     return 0;
