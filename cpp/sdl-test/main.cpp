@@ -33,7 +33,10 @@ int main(int argc, char* argv[])
 
     //initalize and loading variables
     SDL_Window *window = nullptr;
+
     SDL_Texture *currentImage = nullptr;
+    SDL_Texture *freshImage { nullptr };
+
     SDL_Renderer *renderTarget { nullptr };
     SDL_Rect playerRect;
     SDL_Rect playerPosition;
@@ -54,6 +57,7 @@ int main(int argc, char* argv[])
     window = SDL_CreateWindow("balls and cum", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 960, 540, SDL_WINDOW_SHOWN);
     renderTarget = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     currentImage = LoadTexture("output.png", renderTarget);
+    freshImage = LoadTexture("fella.png", renderTarget);
 
     SDL_QueryTexture(currentImage, NULL, NULL, &textureWidth, &textureHeight);
 
@@ -88,7 +92,7 @@ int main(int argc, char* argv[])
         if(isFlipping)
         {
             frameTime++;
-            if(FPS / frameTime == 15)
+            if(FPS / frameTime == 20)
             {
                 frameTime = 0;
                 i++;
@@ -119,6 +123,7 @@ int main(int argc, char* argv[])
 
         //render
         SDL_RenderClear(renderTarget);
+        SDL_RenderCopy(renderTarget, freshImage, NULL, NULL);
         SDL_RenderCopy(renderTarget, currentImage, &playerRect, &playerPosition);
         SDL_RenderPresent(renderTarget);
     }
