@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "stat.cpp"
 
@@ -49,6 +50,10 @@ int main(int argc, char* argv[])
 
     //create window
     SDL_Init(SDL_INIT_VIDEO);
+    if(TTF_Init() < 0)
+    {
+        std::cout << "Error: " << TTF_GetError() << '\n';
+    }
 
     int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
     if(!(IMG_Init(imgFlags) & imgFlags))
@@ -67,6 +72,17 @@ int main(int argc, char* argv[])
     playerRect.x = playerRect.y = 0;
     playerRect.w = frameWidth;
     playerRect.h = frameHeight;
+
+    TTF_Font *font { TTF_OpenFont("COMIC.TTF", 20) };
+    SDL_Color color = { 144, 77, 255, 255 };
+    SDL_Surface *textSurface { TTF_RenderText_Solid(font, "cock and balls and cum", color)};
+    SDL_Texture *text = SDL_CreateTextureFromSurface(renderTarget, textSurface);
+    SDL_Rect textRect;
+    textRect.x = textRect.y = 0;
+    
+    SDL_QueryTexture(text, NULL, NULL, &textRect.w, &textRect.h);
+
+    SDL_FreeSurface(textSurface);
 
     bool isRunning = true;
     SDL_Event ev;
@@ -125,6 +141,7 @@ int main(int argc, char* argv[])
         SDL_RenderClear(renderTarget);
         SDL_RenderCopy(renderTarget, freshImage, NULL, NULL);
         SDL_RenderCopy(renderTarget, currentImage, &playerRect, &playerPosition);
+        SDL_RenderCopy(renderTarget, text, NULL, &textRect);
         SDL_RenderPresent(renderTarget);
     }
 
@@ -132,12 +149,15 @@ int main(int argc, char* argv[])
     SDL_DestroyWindow(window);
     SDL_DestroyTexture(currentImage);
     SDL_DestroyRenderer(renderTarget);
+    SDL_DestroyTexture(text);
 
     window = nullptr;
     currentImage = nullptr;
     renderTarget = nullptr;
+    text = nullptr;
 
     SDL_Quit();
+    IMG_Quit();
 
     return 0;
 }

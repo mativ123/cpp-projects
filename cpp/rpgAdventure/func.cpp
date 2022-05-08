@@ -1,4 +1,4 @@
-include <iostream>
+#include <iostream>
 #include <string>
 #include <iterator>
 #include <bits/stdc++.h>
@@ -367,7 +367,7 @@ bool combat(std::string enemy)
         return true;
     }
 
-    e::enemies[enemy+"currentHp"] = e::enemies[ememy + "Hp"];
+    e::enemies[enemy+"currentHp"] = e::enemies[enemy + "Hp"];
 }
 
 void pickUpWeapon(std::string weapon)
