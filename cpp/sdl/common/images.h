@@ -1,4 +1,4 @@
-class image
+class Image
 {
     SDL_Rect imageRect;
     SDL_Texture *texture { nullptr };

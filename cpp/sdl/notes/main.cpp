@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <cmath>
 
 #include <SDL2/SDL.h>
@@ -17,6 +18,8 @@ int main(int argc, char *argv[])
     int currentTime { 0 };
     float deltaTime { 0.0f };
 
+    float seconds { 0.0f };
+
     SDL_Window *window { nullptr };
     SDL_Renderer *rendere { nullptr };
 
@@ -32,23 +35,14 @@ int main(int argc, char *argv[])
 
     SDL_SetRenderDrawColor(rendere, 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-    image melodica;
+    Image melodica;
     melodica.src = "melodica.jpg";
     melodica.init(rendere);
     melodica.resizeKA('w', windowW  / 2, windowH);
     melodica.y = windowH / 2 - melodica.h / 2;
 
-    TTF_Font *arial = TTF_OpenFont("arial.ttf", 20);
-    SDL_Color black = { 0, 0, 0, SDL_ALPHA_OPAQUE};
-    SDL_Surface *textSurface = TTF_RenderText_Solid(arial, "cock & balls", black);
-    SDL_Texture *text = SDL_CreateTextureFromSurface(rendere, textSurface);
-    SDL_Rect textRect;
-    textRect.x = textRect.y = 0;
-
-    SDL_QueryTexture(text, NULL, NULL, &textRect.w, &textRect.h);
-
-    SDL_FreeSurface(textSurface);
-    textSurface = nullptr;
+    Text fps;
+    fps.init(rendere, "arial.ttf");
 
     bool isRunning { true };
     SDL_Event ev;
@@ -58,6 +52,8 @@ int main(int argc, char *argv[])
         prevTime = currentTime;
         currentTime = SDL_GetTicks();
         deltaTime = (currentTime - prevTime) / 1000.0f;
+
+        seconds += deltaTime;
 
         while(SDL_PollEvent(&ev) != 0)
         {
@@ -69,17 +65,18 @@ int main(int argc, char *argv[])
 
         SDL_RenderClear(rendere);
         melodica.draw(rendere);
-        SDL_RenderCopy(rendere, text, NULL, &textRect);
+        fps.draw(rendere, std::to_string(SDL_GetTicks() / seconds));
+        //SDL_RenderCopy(rendere, text, NULL, &textRect);
         SDL_RenderPresent(rendere);
     }
 
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(rendere);
-    SDL_DestroyTexture(text);
+    //SDL_DestroyTexture(text);
 
     window = nullptr;
     rendere = nullptr;
-    text = nullptr;
+    //text = nullptr;
 
     melodica.destroyTexture();
 
