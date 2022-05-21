@@ -43,9 +43,17 @@ int main(int argc, char *argv[])
 
     Text fps;
     fps.init(rendere, "arial.ttf");
+    
+    Text textInpOut;
+    textInpOut.init(rendere, "arial.ttf");
+    std::string textInp;
+    textInpOut.x = windowW / 2;
+    textInpOut.wrapSize = windowW / 2;
 
     bool isRunning { true };
     SDL_Event ev;
+
+    SDL_StartTextInput();
 
     while(isRunning)
     {
@@ -60,15 +68,26 @@ int main(int argc, char *argv[])
             if(ev.type == SDL_QUIT)
             {
                 isRunning = false;
+            } else if(ev.type == SDL_TEXTINPUT || ev.type == SDL_KEYDOWN)
+            {
+                if(ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_BACKSPACE && textInp.length() > 0)
+                    textInp = textInp.substr(0, textInp.length() - 1);
+                else if(ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_RETURN)
+                    textInp += "\n";
+                else if(ev.type == SDL_TEXTINPUT)
+                    textInp += ev.text.text;
             }
         }
 
         SDL_RenderClear(rendere);
         melodica.draw(rendere);
         fps.draw(rendere, std::to_string(SDL_GetTicks() / seconds));
+        textInpOut.draw(rendere, textInp);
         //SDL_RenderCopy(rendere, text, NULL, &textRect);
         SDL_RenderPresent(rendere);
     }
+
+    SDL_StopTextInput();
 
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(rendere);
