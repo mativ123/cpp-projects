@@ -2,6 +2,7 @@
 #include <string>
 #include <cstring>
 #include <cmath>
+#include <array>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -41,14 +42,25 @@ int main(int argc, char *argv[])
     melodica.resizeKA('w', windowW  / 2, windowH);
     melodica.y = windowH / 2 - melodica.h / 2;
 
-    Text fps;
-    fps.init(rendere, "arial.ttf");
-    
-    Text textInpOut;
-    textInpOut.init(rendere, "arial.ttf");
-    std::string textInp;
-    textInpOut.x = windowW / 2;
-    textInpOut.wrapSize = windowW / 2;
+    std::array<Image, 11> notes;
+    notes[0].src = "note-pics/c1.png";
+    notes[1].src = "note-pics/d1.png";
+    notes[2].src = "note-pics/e1.png";
+    notes[3].src = "note-pics/f1.png";
+    notes[4].src = "note-pics/g1.png";
+    notes[5].src = "note-pics/a1.png";
+    notes[6].src = "note-pics/b1.png";
+    notes[7].src = "note-pics/c2.png";
+    notes[8].src = "note-pics/d2.png";
+    notes[9].src = "note-pics/e2.png";
+    notes[10].src = "note-pics/f2.png";
+    for(int i { 0 }; i<notes.size(); ++i)
+    {
+        notes[i].init(rendere);
+        notes[i].resizeKA('w', windowW / 2, windowH);
+        notes[i].y = windowH / 2 - notes[i].h / 2;
+    }
+    int noteShow { 0 };
 
     bool isRunning { true };
     SDL_Event ev;
@@ -68,21 +80,14 @@ int main(int argc, char *argv[])
             if(ev.type == SDL_QUIT)
             {
                 isRunning = false;
-            } else if(ev.type == SDL_TEXTINPUT || ev.type == SDL_KEYDOWN)
-            {
-                if(ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_BACKSPACE && textInp.length() > 0)
-                    textInp = textInp.substr(0, textInp.length() - 1);
-                else if(ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_RETURN)
-                    textInp += "\n";
-                else if(ev.type == SDL_TEXTINPUT)
-                    textInp += ev.text.text;
             }
         }
+        noteShow = floor(seconds);
+        if(noteShow >= notes.size())
+            noteShow = 0;
 
         SDL_RenderClear(rendere);
-        melodica.draw(rendere);
-        fps.draw(rendere, std::to_string(SDL_GetTicks() / seconds));
-        textInpOut.draw(rendere, textInp);
+        notes[noteShow].draw(rendere);
         //SDL_RenderCopy(rendere, text, NULL, &textRect);
         SDL_RenderPresent(rendere);
     }
@@ -98,6 +103,10 @@ int main(int argc, char *argv[])
     //text = nullptr;
 
     melodica.destroyTexture();
+    for(int i { 0 }; i<notes.size(); ++i)
+    {
+        notes[i].destroyTexture();
+    }
 
     SDL_Quit();
     IMG_Quit();
