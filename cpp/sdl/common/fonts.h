@@ -22,12 +22,12 @@ class Text
             textRect.y = y;
         }
 
-        void draw(SDL_Renderer *rendere, std::string textString)
+        void draw(SDL_Renderer *rendere)
         {
             textRect.x = x;
             textRect.y = y;
 
-            SDL_Surface *textSurface = TTF_RenderText_Solid_Wrapped(font, textString.c_str(), color, wrapSize);
+            SDL_Surface *textSurface = TTF_RenderText_Blended_Wrapped(font, textString.c_str(), color, wrapSize);
             SDL_Texture *text = SDL_CreateTextureFromSurface(rendere, textSurface);
 
             SDL_QueryTexture(text, NULL, NULL, &textRect.w, &textRect.h);

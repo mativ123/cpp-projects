@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
     double groundNum { ceil(static_cast<double>(windowW)/groundRect.w) };
 
 
+
     SDL_Event ev;
     bool isRunning { true };
 
@@ -140,6 +141,7 @@ int main(int argc, char *argv[])
         playerRect.y += playerYspeed * deltaTime;
         playerRect.x += playerXspeed;
 
+        SDL_RenderSetClipRect(mainRendere, &playerRect);
         SDL_RenderCopy(mainRendere, playerImg, NULL, &playerRect);
         SDL_RenderPresent(mainRendere);
     }

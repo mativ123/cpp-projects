@@ -8,9 +8,8 @@ class Image
         int x { 0 };
         int y { 0 };
         float rot { 0.0f };
-        std::string src;
 
-    void init(SDL_Renderer *rendere)
+    void init(SDL_Renderer *rendere, std::string src)
     {
         texture = LoadTexture(src, rendere);
         SDL_QueryTexture(texture, NULL, NULL, &w, &h);
