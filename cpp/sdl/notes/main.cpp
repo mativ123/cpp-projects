@@ -35,8 +35,6 @@ int main(int argc, char *argv[])
 
     SDL_GLContext context;
 
-    std::cout << SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY) << '\n';
-
     SDL_Init(SDL_INIT_VIDEO);
     int imgFlags { IMG_INIT_PNG | IMG_INIT_JPG };
     if(!(IMG_Init(imgFlags) & imgFlags))
@@ -49,7 +47,9 @@ int main(int argc, char *argv[])
     if(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4) != 0)
         std::cout << SDL_GetError() << '\n';
 
-    window = SDL_CreateWindow("notes", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowW, windowH, SDL_WINDOW_SHOWN);
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+
+    window = SDL_CreateWindow("notes", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowW, windowH, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
     rendere = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
     context = SDL_GL_CreateContext(window);
 

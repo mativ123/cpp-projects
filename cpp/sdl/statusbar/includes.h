@@ -5,4 +5,6 @@
 #include "../common/fonts.h"
 #include "../common/images.h"
 
+#include "getCommand.cpp"
+
 #endif
