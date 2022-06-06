@@ -1,0 +1,142 @@
+* {
+  margin: 0;
+  padding: 0;
+
+  font-family: 'Trebuchet MS', sans-serif; 
+}
+
+body {
+  height: 100vh;
+  background-color: #eee;
+  /*overflow-y: hidden;*/
+}
+
+p {
+  font-size: 13px;
+}
+
+table {
+  background-color: #eee;
+}
+
+th {
+  padding-right: 10px;
+  min-width:45px;
+  font-size: 13px;
+}
+
+.del1 tbody {
+  cursor: pointer;
+
+}
+
+th, td {
+  border-bottom: 1px solid #ddd;
+  height: 24px;
+
+} 
+
+td {
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+ font-size: 13px;
+ background-color: #ddd;
+}
+
+.grayed {
+  background: #d4d2d2;
+}
+
+.sidebar {
+  float:left;
+  background-color: #71bde3;
+  width: 50px;
+  height: 100%;
+  position: fixed;
+  z-index: 5;
+}
+
+.sidebar img{
+  padding: 5px;
+  cursor: pointer;
+}
+
+.people {
+  display: none;
+}
+
+.indented {
+  top: 100px;
+  left: 60px;
+  position: absolute;
+}
+
+.content, .people {
+  width: 98%;
+  height: 100%;
+
+  padding-left: 50px;
+}
+
+.menu {
+  position: fixed;
+  top: 10px;
+  left: 60px;
+}
+
+.table {
+  top: 25%;
+  position: relative;
+
+  user-select: none; /* supported by Chrome and Opera */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+canvas, #message {
+  top:26%;
+  position: relative;
+}
+
+.clickable:hover {
+  background-color: #eeeeee;
+}
+
+#createTimeForm, #importForm, #importForm2 {
+  position:fixed;
+  display: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 800px;
+
+  background-color: #eeeeee;
+  box-shadow: 3px 3px 5px black;
+  z-index: 20;
+
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.flex {
+  display: flex;
+}
+
+#prompt {
+  width: 106px;
+}
+
+.hidden {
+  display: none;
+}
+
+#credit {
+  top: 25px;
+  right: 25px;
+  position: fixed;
+}
+

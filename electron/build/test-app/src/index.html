@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Kordinatorgruppe manager</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+  <div class="sidebar">
+    <img src="assets/clock2.png" alt="" width="40" onclick="goto_time();">
+    <img src="assets/person.png" alt="" width="40" onclick="goto_person();">
+  </div>
+  
+  <div class="content">
+    <div class="menu">
+      <h1>Tidstabel</h1> 
+      <button onclick="import_file();">Import tidstabel</button>
+      <button onclick="export_file();">Gem tidstabel</button>
+    </div>
+    <div class="table"></div>
+    <p id="message"><i> En graf over mængten af tildete personer</i></p>
+    <canvas width="200" height="100" id="myCanvas"></canvas>
+  </div>
+
+  <div class="people">
+    <div class="menu">
+      <h1>Person Configuration</h1> 
+      <button onclick="import_file2();">Import configuration</button>
+      <button onclick="export_person_file();">Gem configuration</button>
+    </div>
+    <div class="indented">
+      <p>Indsæt medlemmerne i din kordinatorgruppe samt dig selv, det er vigtigt for os at få jeres telefon numre korrekt.</p> 
+      <br>
+      <div class="table2"></div>
+    </div>
+  </div>
+
+  <div id="credit">Lavet af Drillenissen#5308 - 0.0.2</div>
+
+  <div id="createTimeForm">
+    <h1>Tilføj arbejdszone</h1>
+    <div class="row1 flex">
+      <p id="prompt">Start tidspunkt: </p>
+      <input id="time1" size=5 placeholder="HH:MM">
+      <input id="day1" size=5 placeholder="Dag (1, 2, 3)">
+    </div>
+    <div class="row2 flex">
+      <p id="prompt">Stop tidspunkt: </p>
+      <input id="time2" size=5 placeholder="HH:MM">
+      <input id="day2" size=5 placeholder="Dag (1, 2, 3)">
+    </div>
+    <br>
+    <p>Hvor mange seperate vagter skal arbejdszonen deles op i?</p>
+    <input id="vagter" size=5 placeholder="1, 2, 3, 4">
+    <br>
+    <br>
+    <p>Hvor mange skal der være tildelt per vagt?</p>
+    <input id="antal" size=5 placeholder="1, 2, 3, 4">
+    <br>
+    <br>
+    <p>Hvor skal man møde op henne?</p>
+    <input id="meeting" size=30 placeholder="I æble lunden">
+    <br>
+    <br>
+    <div class="flex">
+      <button onclick="add_timezone();">Gem</button>
+      <button onclick="stop_form();">Anuller</button>
+      <button onclick="delete_elem();" id="sletKnap">Slet</button>
+    </div>
+
+    <p class="hidden rowholder"></p> 
+    
+  </div>  
+
+  <div id="importForm">
+    <h1>Import data</h1>
+    <p>Indsæt din .rye fil for at loade den.</p>
+    <br>
+    <input type="file" id="loadDataFeild">
+    <br>
+    <br>
+    <button onclick="load_data();">Advend</button>
+    <button onclick="stop_form2();">Anuller</button>
+  </div>
+
+  <div id="importForm2">
+    <h1>Import data</h1>
+    <p>Indsæt din .rye fil for at loade den.</p>
+    <br>
+    <input type="file" id="loadDataFeild2">
+    <br>
+    <br>
+    <button onclick="load_person_data();">Advend</button>
+    <button onclick="stop_form3();">Anuller</button>
+  </div>
+
+</body>
+    <script src="script.js"></script>
+</html>
+

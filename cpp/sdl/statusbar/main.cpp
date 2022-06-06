@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
 
     int mouseX, mouseY;
 
+
     SDL_Window *bar { nullptr };
     SDL_Renderer *rendere { nullptr };
 
@@ -158,7 +159,10 @@ int main(int argc, char *argv[])
 void drawRight(SDL_Renderer *rendere, int windowW, int windowH, float second)
 {
     int buffer { 10 };
-    text_elements::musicText.textString = exec("sh ./spotify");
+    if(exec("ps cax | grep spotify").length() == 259)
+        text_elements::musicText.textString = exec("sh ./spotify");
+    else
+        text_elements::musicText.textString = "spotify not running";
     std::string tempVolume { exec("sh ./volume") };
     tempVolume.erase(tempVolume.length() - 1, 1);
     text_elements::volumeText.textString = tempVolume;
