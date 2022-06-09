@@ -23,6 +23,8 @@ namespace text_elements
     Text memoryText;
     Text volumeText;
 
+    Text workSpaceText;
+
     Text sepText;
 }
 
@@ -99,6 +101,10 @@ int main(int argc, char *argv[])
     text_elements::volumeText.color = { 255, 255, 255, 255 };
     text_elements::volumeText.fontSize = fontSize;
     text_elements::volumeText.init(rendere, "arial.ttf");
+
+    text_elements::workSpaceText.color = { 38, 39, 41, 255 };
+    text_elements::workSpaceText.fontSize = fontSize;
+    text_elements::workSpaceText.init(rendere, "arial.ttf");
 
     //images
     image_elements::dateIcon.init(rendere, "date-icon.png");
@@ -217,12 +223,20 @@ void drawCenter(SDL_Renderer *rendere, int windowW, int windowH)
 
 void drawLeft(SDL_Renderer *rendere, int windowH)
 {
+    std::string workspaceString { exec("i3-msg -t get_workspaces") };
+    size_t activePos { workspaceString.find("focused\":true")};
+    std::string activeId { workspaceString[activePos - 19] };
+
     SDL_Rect workspaceRect;
     workspaceRect.w = workspaceRect.h = windowH;
     workspaceRect.x = 0;
     SDL_SetRenderDrawColor(rendere, 50, 255, 10, 255);
     SDL_RenderFillRect(rendere, &workspaceRect);
     SDL_SetRenderDrawColor(rendere, 38, 39, 41, 255);
+    text_elements::workSpaceText.textString = activeId;
+    text_elements::workSpaceText.x = workspaceRect.w / 2 - text_elements::workSpaceText.w / 2;
+    text_elements::workSpaceText.y = workspaceRect.h / 2 - text_elements::workSpaceText.h / 2;
+    text_elements::workSpaceText.draw(rendere);
 }
 
 //element functions
