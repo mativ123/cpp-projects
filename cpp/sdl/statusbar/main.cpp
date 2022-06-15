@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <array>
 #include <algorithm>
+#include <vector>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -38,6 +39,7 @@ void drawRight(SDL_Renderer *rendere, int windowW, int windowH, float second);
 std::string getTime();
 void drawCenter(SDL_Renderer *rendere, int windowW, int windowH);
 void drawLeft(SDL_Renderer *rendere, int windowH);
+int countSubstrings(std::string str, std::string target);
 
 int main(int argc, char *argv[])
 {
@@ -165,7 +167,7 @@ int main(int argc, char *argv[])
 void drawRight(SDL_Renderer *rendere, int windowW, int windowH, float second)
 {
     int buffer { 10 };
-    if(exec("ps cax | grep spotify").length() == 259)
+    if(exec("ps cax | grep spotify").length() > 100)
         text_elements::musicText.textString = exec("sh ./spotify");
     else
         text_elements::musicText.textString = "spotify not running";
@@ -227,9 +229,22 @@ void drawLeft(SDL_Renderer *rendere, int windowH)
     size_t activePos { workspaceString.find("focused\":true")};
     std::string activeId { workspaceString[activePos - 19] };
 
+    int count { countSubstrings(workspaceString,"focused") };
+    std::vector<std::string> workspaceNums;
+
     SDL_Rect workspaceRect;
     workspaceRect.w = workspaceRect.h = windowH;
+    workspaceRect.y = 0;
+    int offset { workspaceRect.w };
+    for(int i { 0 }; i<count-1; ++i)
+    {
+        workspaceRect.x = offset;
+        SDL_SetRenderDrawColor(rendere, 150, 150, 150, 100);
+        SDL_RenderFillRect(rendere, &workspaceRect);
+        offset += workspaceRect.w;
+    }
     workspaceRect.x = 0;
+
     SDL_SetRenderDrawColor(rendere, 50, 255, 10, 255);
     SDL_RenderFillRect(rendere, &workspaceRect);
     SDL_SetRenderDrawColor(rendere, 38, 39, 41, 255);
@@ -240,6 +255,16 @@ void drawLeft(SDL_Renderer *rendere, int windowH)
 }
 
 //element functions
+int countSubstrings(std::string str, std::string target)
+{
+int occurrences = 0;
+   std::string::size_type pos = 0;
+   while ((pos = str.find(target, pos )) != std::string::npos) {
+          ++ occurrences;
+          pos += target.length();
+   }
+   return occurrences;
+}
 
 std::string getTime()
 {
