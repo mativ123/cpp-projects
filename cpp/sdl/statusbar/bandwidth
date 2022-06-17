@@ -13,7 +13,7 @@ DISPLAY=$(echo "${INSTANCE}" | awk -F ';' '{print $2}')
 INSTANCE=$(echo "${INSTANCE}" | awk -F ';' '{print $1}')
 
 if [[ "${DISPLAY}" = "" ]]; then
-  DISPLAY="in"
+  DISPLAY="both"
 fi
 
 ONE_KB=1024
