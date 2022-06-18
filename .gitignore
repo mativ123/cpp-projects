@@ -1,2 +1,2 @@
 *.zip
-/cpp/sdl/bins\ for\ windows
+**/bins\ for\ windows
