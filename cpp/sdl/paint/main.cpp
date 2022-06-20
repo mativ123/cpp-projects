@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
                 drawColor.push_back(white);
             else
                 drawColor.push_back(currentColor);
+            std::cout << coordinatesX.size() << '\n';
         }
         SDL_SetRenderDrawColor(rendere, 255, 255, 255, 255);
         SDL_RenderClear(rendere);
