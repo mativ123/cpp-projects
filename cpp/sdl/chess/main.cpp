@@ -17,6 +17,8 @@ void drawPiece(SDL_Renderer *rendere, Piece x, std::array<int, 64> tileX, std::a
 std::vector<Piece> createPlayer(int color);
 int tileClicked(int mouseX, int mouseY, std::array<int, 64> tileX, std::array<int, 64> tileY, int tileSize);
 std::array<int, 2> boardClick(int mouseX, int mouseY, std::vector<Piece> white, std::vector<Piece> black, std::array<int, 64> tileX, std::array<int, 64> tileY, int tileSize);
+bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> lastClicked);
+bool checkPawn(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
 
 int main(int argc, char *argv[])
 {
@@ -139,16 +141,32 @@ int main(int argc, char *argv[])
                         moving = true;
                     } else if(lastClicked[1] == 0)
                     {
-                        //moves white piece if a piece has been selected
-                        whitePLayer[lastClicked[0]].tile = tileClicked(mouseX, mouseY, tileX, tileY, tileSize);
-                        
-                        moving = false;
+                        if(checkMove(whitePLayer, tileClicked(mouseX, mouseY, tileX, tileY, tileSize), lastClicked))
+                        {
+                            //moves white piece if a piece has been selected
+                            for(int i { 0 }; i<blackPlayer.size(); ++i)
+                            {
+                                if(blackPlayer[i].tile == tileClicked(mouseX, mouseY, tileX, tileY, tileSize))
+                                    blackPlayer.erase(blackPlayer.begin() + i);
+                            }
+                            whitePLayer[lastClicked[0]].tile = tileClicked(mouseX, mouseY, tileX, tileY, tileSize);
+                            
+                            moving = false;
+                        }
                     } else if(lastClicked[1] == 1)
                     {
-                        //moves black pieces if piece has been selected
-                        blackPlayer[lastClicked[0]].tile = tileClicked(mouseX, mouseY, tileX, tileY, tileSize);
-                        
-                        moving = false;
+                        if(checkMove(blackPlayer, tileClicked(mouseX, mouseY, tileX, tileY, tileSize), lastClicked))
+                        {
+                            //moves black pieces if piece has been selected
+                            for(int i { 0 }; i<whitePLayer.size(); ++i)
+                            {
+                                if(whitePLayer[i].tile == tileClicked(mouseX, mouseY, tileX, tileY, tileSize))
+                                    whitePLayer.erase(whitePLayer.begin() + i);
+                            }
+                            blackPlayer[lastClicked[0]].tile = tileClicked(mouseX, mouseY, tileX, tileY, tileSize);
+                            
+                            moving = false;
+                        }
                     }
                     
                     //checks if last tile clicked was empty
@@ -402,4 +420,39 @@ std::array<int, 2> boardClick(int mouseX, int mouseY, std::vector<Piece> white, 
    //     std::cout << "empty tile\n";
 
     return pieceClicked;
+}
+
+bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> lastClicked)
+{
+    for(int i { 0 }; i<player.size(); ++i)
+    {
+        if(tileClicked == player[i].tile)
+            return false;
+    }
+    bool pieceCheck;
+    switch(player[lastClicked[0]].type)
+    {
+        case 0:
+            pieceCheck = checkPawn(player, lastClicked, tileClicked);
+            break;
+        default:
+            pieceCheck = true;
+            break;
+    }
+    if(pieceCheck)
+        return true;
+    else
+        return false;
+
+    return true;
+}
+
+bool checkPawn(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked)
+{
+    if(player[lastClicked[0]].tile == tileClicked + 8 && lastClicked[1] == 1)
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked - 8 && lastClicked[1] == 0)
+        return true;
+    else
+        return false;
 }
