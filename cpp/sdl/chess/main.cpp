@@ -19,6 +19,11 @@ int tileClicked(int mouseX, int mouseY, std::array<int, 64> tileX, std::array<in
 std::array<int, 2> boardClick(int mouseX, int mouseY, std::vector<Piece> white, std::vector<Piece> black, std::array<int, 64> tileX, std::array<int, 64> tileY, int tileSize);
 bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> lastClicked);
 bool checkPawn(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
+bool checkKnight(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
+bool checkBishop(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
+bool checkRook(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
+bool checkQueen(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
+bool checkKing(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
 
 int main(int argc, char *argv[])
 {
@@ -173,6 +178,17 @@ int main(int argc, char *argv[])
                     if(lastClicked[1] == 3)
                         moving = false;
 
+                } else if(ev.button.button == SDL_BUTTON_RIGHT)
+                    moving = false;
+            } else if(ev.type == SDL_KEYDOWN)
+            {
+                if(ev.key.keysym.sym == SDLK_ESCAPE)
+                    moving = false;
+                else if(ev.key.keysym.sym == SDLK_r)
+                {
+                    whitePLayer = createPlayer(0);
+                    blackPlayer = createPlayer(1);
+                    moving = false;
                 }
             }
         }
@@ -435,6 +451,21 @@ bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> la
         case 0:
             pieceCheck = checkPawn(player, lastClicked, tileClicked);
             break;
+        case 1:
+            pieceCheck = checkKnight(player, lastClicked, tileClicked);
+            break;
+        case 2:
+            pieceCheck = checkBishop(player, lastClicked, tileClicked);
+            break;
+        case 3:
+            pieceCheck = checkRook(player, lastClicked, tileClicked);
+            break;
+        case 4:
+            pieceCheck = checkQueen(player, lastClicked, tileClicked);
+            break;
+        case 5:
+            pieceCheck = checkKing(player, lastClicked, tileClicked);
+            break;
         default:
             pieceCheck = true;
             break;
@@ -452,6 +483,162 @@ bool checkPawn(std::vector<Piece> player, std::array<int, 2> lastClicked, int ti
     if(player[lastClicked[0]].tile == tileClicked + 8 && lastClicked[1] == 1)
         return true;
     else if(player[lastClicked[0]].tile == tileClicked - 8 && lastClicked[1] == 0)
+        return true;
+    else
+        return false;
+}
+
+bool checkKnight(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked)
+{
+    if(player[lastClicked[0]].tile == tileClicked + (16 - 1))
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked + (16 + 1))
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked - (16 - 1))
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked - (16 + 1))
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked - (8 + 2))
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked - (8 - 2))
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked + (8 + 2))
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked + (8 - 2))
+        return true;
+    else
+        return false;
+}
+
+bool checkBishop(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked)
+{
+    int playerRow { 0 };
+    int clickRow { 0 };
+    for(int i { 0 }; i<64; ++i)
+    {
+        if((i + 8) % 8 == 0)
+            playerRow = (i + 8) / 8;
+
+        if(i == player[lastClicked[0]].tile)
+            break;
+    }
+
+    for(int i { 0 }; i<64; ++i)
+    {
+        if((i + 8) % 8 == 0)
+            clickRow = (i + 8) / 8;
+
+        if(i == tileClicked)
+            break;
+    }
+
+    if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8) - (clickRow - playerRow))
+        return true;
+    else if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8) + (clickRow - playerRow))
+        return true;
+    else
+        return false;
+}
+
+bool checkRook(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked)
+{
+    int playerRow { 0 };
+    int clickRow { 0 };
+    for(int i { 0 }; i<64; ++i)
+    {
+        if((i + 8) % 8 == 0)
+            playerRow = (i + 8) / 8;
+
+        if(i == player[lastClicked[0]].tile)
+            break;
+    }
+
+    for(int i { 0 }; i<64; ++i)
+    {
+        if((i + 8) % 8 == 0)
+            clickRow = (i + 8) / 8;
+
+        if(i == tileClicked)
+            break;
+    }
+
+    if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8))
+        return true;
+    else if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8))
+        return true;
+    else if(clickRow == playerRow)
+        return true;
+    else
+        return false;
+}
+
+bool checkQueen(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked)
+{
+    int playerRow { 0 };
+    int clickRow { 0 };
+    for(int i { 0 }; i<64; ++i)
+    {
+        if((i + 8) % 8 == 0)
+            playerRow = (i + 8) / 8;
+
+        if(i == player[lastClicked[0]].tile)
+            break;
+    }
+
+    for(int i { 0 }; i<64; ++i)
+    {
+        if((i + 8) % 8 == 0)
+            clickRow = (i + 8) / 8;
+
+        if(i == tileClicked)
+            break;
+    }
+
+    if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8) - (clickRow - playerRow))
+        return true;
+    else if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8) + (clickRow - playerRow))
+        return true;
+    else if(clickRow == playerRow)
+        return true;
+    else if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8))
+        return true;
+    else if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8))
+        return true;
+    else
+        return false;
+}
+
+bool checkKing(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked)
+{
+    int playerRow { 0 };
+    int clickRow { 0 };
+    for(int i { 0 }; i<64; ++i)
+    {
+        if((i + 8) % 8 == 0)
+            playerRow = (i + 8) / 8;
+
+        if(i == player[lastClicked[0]].tile)
+            break;
+    }
+
+    for(int i { 0 }; i<64; ++i)
+    {
+        if((i + 8) % 8 == 0)
+            clickRow = (i + 8) / 8;
+
+        if(i == tileClicked)
+            break;
+    }
+
+    if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8) - (clickRow - playerRow) && clickRow - playerRow < 2 && clickRow - playerRow > -2)
+        return true;
+    else if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8) + (clickRow - playerRow) && clickRow - playerRow < 2 && clickRow - playerRow > -2)
+        return true;
+    else if(clickRow == playerRow && tileClicked - player[lastClicked[0]].tile < 2 && tileClicked - player[lastClicked[0]].tile > -2)
+        return true;
+    else if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8) && clickRow - playerRow < 2 && clickRow - playerRow > -2)
+        return true;
+    else if(tileClicked == player[lastClicked[0]].tile + ((clickRow - playerRow) * 8) && clickRow - playerRow < 2 && clickRow - playerRow > -2)
         return true;
     else
         return false;
