@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ ! -d "/tmp/peespeak" ] && mkdir "/tmp/peespeak"
+
+title=$RANDOM
+tts --text "$1" --out_path /tmp/peespeak/$title.wav > /dev/null
+
+mpv /tmp/peespeak/$title.wav

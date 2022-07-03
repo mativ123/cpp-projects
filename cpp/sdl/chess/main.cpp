@@ -189,7 +189,8 @@ int main(int argc, char *argv[])
                     whitePLayer = createPlayer(0);
                     blackPlayer = createPlayer(1);
                     moving = false;
-                }
+                } else if(ev.key.keysym.sym == SDLK_q)
+                    running = false;
             }
         }
 
