@@ -23,7 +23,16 @@ bool checkKnight(std::vector<Piece> player, std::array<int, 2> lastClicked, int 
 bool checkBishop(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
 bool checkRook(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
 bool checkQueen(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
-bool checkKing(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked); int main(int argc, char *argv[]) { int windowW { 800 }; int windowH { 800 }; int boardW; int boardH;
+bool checkKing(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
+
+int main(int argc, char *argv[]) 
+{ 
+    std::cout << "balls\n";
+    int windowW { 800 };
+    int windowH { 800 };
+    int boardW;
+    int boardH;
+
     if(windowW > windowH)
     {
         boardH = windowH;
@@ -443,11 +452,12 @@ bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> la
 
 bool checkPawn(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked, std::array<int, 64> tileOccupant)
 {
-    if(player[lastClicked[0]].tile == tileClicked + 8 && lastClicked[1] == 1 /* && tileOccupant[tileClicked + 8] == 0 */)
+    std::cout << "tile " << tileClicked - 8 << ": " << tileOccupant[tileClicked - 8] << '\n';
+    if(player[lastClicked[0]].tile == tileClicked + 8 && lastClicked[1] == 1 && tileOccupant[tileClicked + 8] == 0)
         return true;
     else if(player[lastClicked[0]].tile == tileClicked + 16 && lastClicked[1] == 1 && player[lastClicked[0]].startTile == player[lastClicked[0]].tile && tileOccupant[tileClicked + 8] == 0)
         return true;
-    else if(player[lastClicked[0]].tile == tileClicked - 8 && lastClicked[1] == 0 /* && tileOccupant[tileClicked - 8] == 0 */)
+    else if(player[lastClicked[0]].tile == tileClicked - 8 && lastClicked[1] == 0 && tileOccupant[tileClicked - 8] == 0)
         return true;
     else if(player[lastClicked[0]].tile == tileClicked - 16 && lastClicked[1] == 0 && player[lastClicked[0]].startTile == player[lastClicked[0]].tile && tileOccupant[tileClicked - 8] == 0)
         return true;
