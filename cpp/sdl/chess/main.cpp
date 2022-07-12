@@ -17,20 +17,13 @@ void drawPiece(SDL_Renderer *rendere, Piece x, std::array<int, 64> tileX, std::a
 std::vector<Piece> createPlayer(int color);
 int tileClicked(int mouseX, int mouseY, std::array<int, 64> tileX, std::array<int, 64> tileY, int tileSize);
 std::array<int, 2> boardClick(int mouseX, int mouseY, std::vector<Piece> white, std::vector<Piece> black, std::array<int, 64> tileX, std::array<int, 64> tileY, int tileSize);
-bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> lastClicked);
-bool checkPawn(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
+bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> lastClicked, std::vector<Piece> secondPlayer);
+bool checkPawn(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked, std::array<int, 64> tileOccupant);
 bool checkKnight(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
 bool checkBishop(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
 bool checkRook(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
 bool checkQueen(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
-bool checkKing(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked);
-
-int main(int argc, char *argv[])
-{
-    int windowW { 800 };
-    int windowH { 800 };
-    int boardW;
-    int boardH;
+bool checkKing(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked); int main(int argc, char *argv[]) { int windowW { 800 }; int windowH { 800 }; int boardW; int boardH;
     if(windowW > windowH)
     {
         boardH = windowH;
@@ -87,7 +80,7 @@ int main(int argc, char *argv[])
     std::array<int, 64> tileX;
     std::array<int, 64> tileY;
 
-    std::vector<Piece> whitePLayer { createPlayer(0) };
+    std::vector<Piece> whitePlayer { createPlayer(0) };
     std::vector<Piece> blackPlayer { createPlayer(1) };
 
     SDL_Event ev;
@@ -142,11 +135,11 @@ int main(int argc, char *argv[])
                     if(!moving)
                     {
                         //check for clicks on the board when no piece is selected
-                        lastClicked = boardClick(mouseX, mouseY, whitePLayer, blackPlayer, tileX, tileY, tileSize);
+                        lastClicked = boardClick(mouseX, mouseY, whitePlayer, blackPlayer, tileX, tileY, tileSize);
                         moving = true;
                     } else if(lastClicked[1] == 0)
                     {
-                        if(checkMove(whitePLayer, tileClicked(mouseX, mouseY, tileX, tileY, tileSize), lastClicked))
+                        if(checkMove(whitePlayer, tileClicked(mouseX, mouseY, tileX, tileY, tileSize), lastClicked, blackPlayer))
                         {
                             //moves white piece if a piece has been selected
                             for(int i { 0 }; i<blackPlayer.size(); ++i)
@@ -154,19 +147,19 @@ int main(int argc, char *argv[])
                                 if(blackPlayer[i].tile == tileClicked(mouseX, mouseY, tileX, tileY, tileSize))
                                     blackPlayer.erase(blackPlayer.begin() + i);
                             }
-                            whitePLayer[lastClicked[0]].tile = tileClicked(mouseX, mouseY, tileX, tileY, tileSize);
+                            whitePlayer[lastClicked[0]].tile = tileClicked(mouseX, mouseY, tileX, tileY, tileSize);
                             
                             moving = false;
                         }
                     } else if(lastClicked[1] == 1)
                     {
-                        if(checkMove(blackPlayer, tileClicked(mouseX, mouseY, tileX, tileY, tileSize), lastClicked))
+                        if(checkMove(blackPlayer, tileClicked(mouseX, mouseY, tileX, tileY, tileSize), lastClicked, whitePlayer))
                         {
                             //moves black pieces if piece has been selected
-                            for(int i { 0 }; i<whitePLayer.size(); ++i)
+                            for(int i { 0 }; i<whitePlayer.size(); ++i)
                             {
-                                if(whitePLayer[i].tile == tileClicked(mouseX, mouseY, tileX, tileY, tileSize))
-                                    whitePLayer.erase(whitePLayer.begin() + i);
+                                if(whitePlayer[i].tile == tileClicked(mouseX, mouseY, tileX, tileY, tileSize))
+                                    whitePlayer.erase(whitePlayer.begin() + i);
                             }
                             blackPlayer[lastClicked[0]].tile = tileClicked(mouseX, mouseY, tileX, tileY, tileSize);
                             
@@ -186,7 +179,7 @@ int main(int argc, char *argv[])
                     moving = false;
                 else if(ev.key.keysym.sym == SDLK_r)
                 {
-                    whitePLayer = createPlayer(0);
+                    whitePlayer = createPlayer(0);
                     blackPlayer = createPlayer(1);
                     moving = false;
                 } else if(ev.key.keysym.sym == SDLK_q)
@@ -216,7 +209,7 @@ int main(int argc, char *argv[])
             tileX[i] = tile.x;
             tileY[i] = tile.y;
             //might cause seg-fault ¯\_(ツ)_/¯ (dont think so tho)
-            if(moving && i == whitePLayer[lastClicked[0]].tile && lastClicked[1] == 0)
+            if(moving && i == whitePlayer[lastClicked[0]].tile && lastClicked[1] == 0)
                 tileColor = selected;
             else if(moving && i == blackPlayer[lastClicked[0]].tile && lastClicked[1] == 1 )
                 tileColor = selected;
@@ -238,8 +231,8 @@ int main(int argc, char *argv[])
         }
 
         //draw both players pieces
-        for(int i { 0 }; i<whitePLayer.size(); ++i)
-            drawPiece(rendere, whitePLayer[i], tileX, tileY, whiteImg);
+        for(int i { 0 }; i<whitePlayer.size(); ++i)
+            drawPiece(rendere, whitePlayer[i], tileX, tileY, whiteImg);
         
         for(int i { 0 }; i<blackPlayer.size(); ++i)
             drawPiece(rendere, blackPlayer[i], tileX, tileY, blackImg);
@@ -291,51 +284,51 @@ std::vector<Piece> createPlayer(int color)
         //insert pawns
         for(int i { 0 }; i<8; ++i)
         {
-            returnList.push_back({ i+8, 0, color });
+            returnList.push_back({ i+8, 0, color, i+8 });
         }
 
         //insert knights
-        returnList.push_back({ 1, 1, color });
-        returnList.push_back({ 6, 1, color });
+        returnList.push_back({ 1, 1, color, 1 });
+        returnList.push_back({ 6, 1, color, 6 });
 
         //insert bishops
-        returnList.push_back({ 2, 2, color });
-        returnList.push_back({ 5, 2, color });
+        returnList.push_back({ 2, 2, color, 2 });
+        returnList.push_back({ 5, 2, color, 5 });
 
         //insert rooks
-        returnList.push_back({ 0, 3, color });
-        returnList.push_back({ 7, 3, color });
+        returnList.push_back({ 0, 3, color, 0 });
+        returnList.push_back({ 7, 3, color, 7 });
 
         //insert queen
-        returnList.push_back({ 3, 4, color });
+        returnList.push_back({ 3, 4, color, 3 });
 
         //insert king
-        returnList.push_back({ 4, 5, color });
+        returnList.push_back({ 4, 5, color, 4 });
     } else
     {
         //insert pawns
         for(int i { 0 }; i<8; ++i)
         {
-            returnList.push_back({ i+48, 0, color });
+            returnList.push_back({ i+48, 0, color, i+48 });
         }
 
         //insert knights
-        returnList.push_back({ 57, 1, color });
-        returnList.push_back({ 62, 1, color });
+        returnList.push_back({ 57, 1, color, 57 });
+        returnList.push_back({ 62, 1, color, 62 });
 
         //insert bishops
-        returnList.push_back({ 58, 2, color });
-        returnList.push_back({ 61, 2, color });
+        returnList.push_back({ 58, 2, color, 58 });
+        returnList.push_back({ 61, 2, color, 61 });
 
         //insert rooks
-        returnList.push_back({ 56, 3, color });
-        returnList.push_back({ 63, 3, color });
+        returnList.push_back({ 56, 3, color, 56 });
+        returnList.push_back({ 63, 3, color, 63 });
 
         //insert queen
-        returnList.push_back({ 59, 4, color });
+        returnList.push_back({ 59, 4, color, 59 });
 
         //insert king
-        returnList.push_back({ 60, 5, color });
+        returnList.push_back({ 60, 5, color, 60 });
     }
 
     return returnList;
@@ -381,76 +374,45 @@ std::array<int, 2> boardClick(int mouseX, int mouseY, std::vector<Piece> white, 
         }
     }
 
-   // if(pieceClicked[1] == 0)
-   // {
-   //     switch(white[pieceClicked[0]].type)
-   //     {
-   //         case 0:
-   //             std::cout << "pawn" << '\n';
-   //             break;
-   //         case 1:
-   //             std::cout << "knight" << '\n';
-   //             break;
-   //         case 2:
-   //             std::cout << "bishop" << '\n';
-   //             break;
-   //         case 3:
-   //             std::cout << "rook" << '\n';
-   //             break;
-   //         case 4:
-   //             std::cout << "queen" << '\n';
-   //             break;
-   //         case 5:
-   //             std::cout << "king" << '\n';
-   //             break;
-   //         default:
-   //             std::cout << "error in boardClick white switch: " << white[pieceClicked[0]].type << " is an invalid type\n";
-   //             break;
-   //     }
-   // }else if(pieceClicked[1] == 1)
-   // {
-   //     switch(black[pieceClicked[0]].type)
-   //     {
-   //         case 0:
-   //             std::cout << "pawn" << '\n';
-   //             break;
-   //         case 1:
-   //             std::cout << "knight" << '\n';
-   //             break;
-   //         case 2:
-   //             std::cout << "bishop" << '\n';
-   //             break;
-   //         case 3:
-   //             std::cout << "rook" << '\n';
-   //             break;
-   //         case 4:
-   //             std::cout << "queen" << '\n';
-   //             break;
-   //         case 5:
-   //             std::cout << "king" << '\n';
-   //             break;
-   //         default:
-   //             std::cout << "error in boardClick black switch: " << black[pieceClicked[0]].type << " is an invalid type\n";
-   //             break;
-   //     }
-   // } else
-   //     std::cout << "empty tile\n";
-
     return pieceClicked;
 }
 
-bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> lastClicked)
+bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> lastClicked, std::vector<Piece> secondPlayer)
 {
-    for(int i { 0 }; i<player.size(); ++i)
+    // 0=free, 1=white, 2=black
+    std::array<int, 64> tileOccupant { };
+
+    for(int i { 0 }; i<64; ++i)
     {
-        if(tileClicked == player[i].tile)
-            return false;
+        for(int x { 0 }; x<player.size(); ++x)
+        {
+            if(player[x].tile == i)
+            {
+                tileOccupant[i] = player[x].color + 1;
+                break;
+            }
+        }
+        if(tileOccupant[i] != 0)
+            continue;
+
+        for(int x { 0 }; x<secondPlayer.size(); ++x)
+        {
+            if(secondPlayer[x].tile == i)
+            {
+                tileOccupant[i] = secondPlayer[x].color + 1;
+                break;
+            }
+        }
     }
+
+    if(tileOccupant[tileClicked] == player[0].color + 1)
+        return false;
+
     bool pieceCheck;
     switch(player[lastClicked[0]].type)
     {
         case 0:
-            pieceCheck = checkPawn(player, lastClicked, tileClicked);
+            pieceCheck = checkPawn(player, lastClicked, tileClicked, tileOccupant);
             break;
         case 1:
             pieceCheck = checkKnight(player, lastClicked, tileClicked);
@@ -479,11 +441,23 @@ bool checkMove(std::vector<Piece> player, int tileClicked, std::array<int, 2> la
     return true;
 }
 
-bool checkPawn(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked)
+bool checkPawn(std::vector<Piece> player, std::array<int, 2> lastClicked, int tileClicked, std::array<int, 64> tileOccupant)
 {
-    if(player[lastClicked[0]].tile == tileClicked + 8 && lastClicked[1] == 1)
+    if(player[lastClicked[0]].tile == tileClicked + 8 && lastClicked[1] == 1 /* && tileOccupant[tileClicked + 8] == 0 */)
         return true;
-    else if(player[lastClicked[0]].tile == tileClicked - 8 && lastClicked[1] == 0)
+    else if(player[lastClicked[0]].tile == tileClicked + 16 && lastClicked[1] == 1 && player[lastClicked[0]].startTile == player[lastClicked[0]].tile && tileOccupant[tileClicked + 8] == 0)
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked - 8 && lastClicked[1] == 0 /* && tileOccupant[tileClicked - 8] == 0 */)
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked - 16 && lastClicked[1] == 0 && player[lastClicked[0]].startTile == player[lastClicked[0]].tile && tileOccupant[tileClicked - 8] == 0)
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked + 7 && tileOccupant[tileClicked + 7] != player[0].color + 1 && tileOccupant[tileClicked + 7] != 0)
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked + 9 && tileOccupant[tileClicked + 9] != player[0].color + 1 && tileOccupant[tileClicked + 9] != 0)
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked - 7 && tileOccupant[tileClicked - 7] != player[0].color + 1 && tileOccupant[tileClicked - 7] != 0)
+        return true;
+    else if(player[lastClicked[0]].tile == tileClicked - 9 && tileOccupant[tileClicked - 9] != player[0].color + 1 && tileOccupant[tileClicked - 9] != 0)
         return true;
     else
         return false;
