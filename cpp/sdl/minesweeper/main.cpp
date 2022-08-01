@@ -1,3 +1,4 @@
+// libraries
 #include <iostream>
 #include <string>
 #include <vector>
@@ -7,9 +8,14 @@
 
 // sdl
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
-void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int offset, std::vector<int> minePos);
+// headers
+#include "../common/fonts.h"
+
+void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int offset, std::vector<int> minePos, Text numbers, std::vector<int> field);
 std::vector<int> populateMines(int width, int height, std::mt19937 rand);
+std::vector<int> createField(int width, int height, std::vector<int> minePos);
 
 int main(int argc, char *argv[])
 {
@@ -29,9 +35,18 @@ int main(int argc, char *argv[])
     int windowHeight { height * (tileSize + offset) + offset};
 
     std::vector<int> minePos { populateMines(width, height, rand)};
+    std::vector<int> field { createField(width, height, minePos) };
+
+    SDL_Init(SDL_INIT_VIDEO);
+    TTF_Init();
 
     SDL_Window *window = SDL_CreateWindow("minesweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
     SDL_Renderer *rendere = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+    Text numbers;
+    numbers.color = { 255, 255, 255, 255 };
+    numbers.fontSize = 20;
+    numbers.init(rendere, "arial.ttf");
 
     SDL_Event ev;
     bool running { true };
@@ -56,7 +71,7 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(rendere, 255, 255, 255, 255);
         SDL_RenderClear(rendere);
 
-        drawTiles(rendere, width, height, tileSize, offset, minePos);
+        drawTiles(rendere, width, height, tileSize, offset, minePos, numbers, field);
 
         SDL_RenderPresent(rendere);
     }
@@ -68,11 +83,12 @@ int main(int argc, char *argv[])
     rendere = nullptr;
 
     SDL_Quit();
+    TTF_Quit();
     
     return 0;
 }
 
-void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int offset, std::vector<int> minePos)
+void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int offset, std::vector<int> minePos, Text numbers, std::vector<int> field)
 {
     SDL_Rect tileRect;
     tileRect.w = tileRect.h = tileSize;
@@ -86,14 +102,21 @@ void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int o
     {
         for(int x { }; x<height; ++x)
         {
-            for(int i : minePos)
+            bool drawNumber { false };
+            if(std::find(minePos.begin(), minePos.end(), count) != minePos.end())
+                SDL_SetRenderDrawColor(rendere, 255, 0, 0, 255);
+            else
             {
-                if(i == count)
-                    SDL_SetRenderDrawColor(rendere, 255, 0, 0, 255);
+                SDL_SetRenderDrawColor(rendere, 0, 0, 0, 255);
+                numbers.textString = std::to_string(field[count]);
+                numbers.x = tileRect.x;
+                numbers.y = tileRect.y;
+                drawNumber = true;
             }
 
             SDL_RenderFillRect(rendere, &tileRect);
-            SDL_SetRenderDrawColor(rendere, 0, 0, 0, 255);
+            if(drawNumber)
+                numbers.draw(rendere);
             tileRect.x += tileSize + offset;
             ++count;
         }
@@ -114,6 +137,36 @@ std::vector<int> populateMines(int width, int height, std::mt19937 rand)
     std::shuffle(std::begin(field), std::end(field), rand);
 
     field.resize(field.size()-(field.size() - mineCount));
+
+    return field;
+}
+
+std::vector<int> createField(int width, int height, std::vector<int> minePos)
+{
+    std::vector<int> field(height * width);
+
+    for(int i { 0 }; i<field.size(); ++i)
+    {
+        int mineCount { };
+        if(std::find(minePos.begin(), minePos.end(), i - width - 1) != minePos.end() && i - width - 1 > -1 && i - width - 1 < field.size())
+            ++mineCount;
+        if(std::find(minePos.begin(), minePos.end(), i - width) != minePos.end() && i - width > -1 && i - width < field.size())
+            ++mineCount;
+        if(std::find(minePos.begin(), minePos.end(), i - width + 1) != minePos.end() && i - width + 1 > -1 && i - width + 1 < field.size())
+            ++mineCount;
+        if(std::find(minePos.begin(), minePos.end(), i - 1) != minePos.end() && i - 1 > -1 && i - 1 < field.size())
+            ++mineCount;
+        if(std::find(minePos.begin(), minePos.end(), i + 1) != minePos.end() && i + 1 > -1 && i + 1 < field.size())
+            ++mineCount;
+        if(std::find(minePos.begin(), minePos.end(), i + width - 1) != minePos.end() && i + width - 1 > -1 && i + width - 1 < field.size())
+            ++mineCount;
+        if(std::find(minePos.begin(), minePos.end(), i + width) != minePos.end() && i + width > -1 && i + width < field.size())
+            ++mineCount;
+        if(std::find(minePos.begin(), minePos.end(), i + width + 1) != minePos.end() && i + width + 1 > -1 && i + width + 1< field.size())
+            ++mineCount;
+
+        field[i] = mineCount;
+    }
 
     return field;
 }
