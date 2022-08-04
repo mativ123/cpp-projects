@@ -5,6 +5,7 @@
 #include <numeric>
 #include <random>
 #include <algorithm>
+#include <array>
 
 // sdl
 #include <SDL2/SDL.h>
@@ -13,12 +14,18 @@
 // headers
 #include "../common/fonts.h"
 
-void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int offset, std::vector<int> minePos, Text numbers, std::vector<int> field);
-std::vector<int> populateMines(int width, int height, std::mt19937 rand);
-std::vector<int> createField(int width, int height, std::vector<int> minePos);
+void DrawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int offset, std::vector<int> minePos, Text numbers, std::vector<int> field, std::vector<int> tileState);
+std::vector<int> PopulateMines(int width, int height, std::mt19937 rand);
+std::vector<int> CreateField(int width, int height, std::vector<int> minePos, std::vector<int> edges);
+std::vector<int> DefineEdges(int width, int height);
+std::vector<std::array<int, 2>> TilePos(int width, int height, int tileSize, int offset);
+std::vector<int> TileClicked(int mouseButton, int mouseX, int mouseY, std::vector<int> tileState, std::vector<std::array<int, 2>> tilePos, int tileSize, std::vector<int> field, std::vector<int> edges, int width, int height);
 
 int main(int argc, char *argv[])
 {
+    int mouseX { };
+    int mouseY { };
+
     std::mt19937 rand { std::random_device{}() };
     std::cout << "enter width: ";
     int width { };
@@ -34,8 +41,14 @@ int main(int argc, char *argv[])
     int windowWidth { width * (tileSize + offset) + offset};
     int windowHeight { height * (tileSize + offset) + offset};
 
-    std::vector<int> minePos { populateMines(width, height, rand)};
-    std::vector<int> field { createField(width, height, minePos) };
+    std::vector<int> edges { DefineEdges(width, height) };
+    std::vector<int> minePos { PopulateMines(width, height, rand)};
+    std::vector<int> field { CreateField(width, height, minePos, edges) };
+    // 0 = hidden, 1 = revealed, 2 = flagged
+    std::vector<int> tileState(field.size());
+    // [0] = x, [1] = y
+    std::vector<std::array<int, 2>> tilePos { TilePos(width, height, tileSize, offset) };
+
 
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
@@ -53,16 +66,25 @@ int main(int argc, char *argv[])
 
     while(running)
     {
+        SDL_GetMouseState(&mouseX, &mouseY);
         while(SDL_PollEvent(&ev) > 0)
         {
             if(ev.type == SDL_QUIT)
                 running = false;
-            if(ev.type == SDL_KEYDOWN)
+            else if(ev.type == SDL_KEYDOWN)
             {
                 switch(ev.key.keysym.sym)
                 {
                     case SDLK_q:
                         running = false;
+                        break;
+                }
+            } else if(ev.type == SDL_MOUSEBUTTONDOWN)
+            {
+                switch(ev.button.button)
+                {
+                    case SDL_BUTTON_LEFT:
+                        tileState = TileClicked(0, mouseX, mouseY, tileState, tilePos, tileSize, field, edges, width, height);
                         break;
                 }
             }
@@ -71,7 +93,7 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(rendere, 255, 255, 255, 255);
         SDL_RenderClear(rendere);
 
-        drawTiles(rendere, width, height, tileSize, offset, minePos, numbers, field);
+        DrawTiles(rendere, width, height, tileSize, offset, minePos, numbers, field, tileState);
 
         SDL_RenderPresent(rendere);
     }
@@ -88,7 +110,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int offset, std::vector<int> minePos, Text numbers, std::vector<int> field)
+void DrawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int offset, std::vector<int> minePos, Text numbers, std::vector<int> field, std::vector<int> tileState)
 {
     SDL_Rect tileRect;
     tileRect.w = tileRect.h = tileSize;
@@ -100,12 +122,10 @@ void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int o
     SDL_SetRenderDrawColor(rendere, 0, 0, 0, 255);
     for(int y { }; y<height; ++y)
     {
-        for(int x { }; x<height; ++x)
+        for(int x { }; x<width; ++x)
         {
             bool drawNumber { false };
-            if(std::find(minePos.begin(), minePos.end(), count) != minePos.end())
-                SDL_SetRenderDrawColor(rendere, 255, 0, 0, 255);
-            else
+            if(std::find(minePos.begin(), minePos.end(), count) == minePos.end())
             {
                 SDL_SetRenderDrawColor(rendere, 0, 0, 0, 255);
                 numbers.textString = std::to_string(field[count]);
@@ -115,7 +135,7 @@ void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int o
             }
 
             SDL_RenderFillRect(rendere, &tileRect);
-            if(drawNumber)
+            if(drawNumber && tileState[count] == 1)
                 numbers.draw(rendere);
             tileRect.x += tileSize + offset;
             ++count;
@@ -126,7 +146,7 @@ void drawTiles(SDL_Renderer *rendere, int width, int height, int tileSize, int o
     }
 }
 
-std::vector<int> populateMines(int width, int height, std::mt19937 rand)
+std::vector<int> PopulateMines(int width, int height, std::mt19937 rand)
 {
     std::cout << "enter mine-count: ";
     int mineCount { };
@@ -141,32 +161,122 @@ std::vector<int> populateMines(int width, int height, std::mt19937 rand)
     return field;
 }
 
-std::vector<int> createField(int width, int height, std::vector<int> minePos)
+std::vector<int> CreateField(int width, int height, std::vector<int> minePos, std::vector<int> edges)
 {
     std::vector<int> field(height * width);
+    std::vector<int> opEdges;
+    for(int i : edges)
+        opEdges.push_back(i + (width - 1));
+
 
     for(int i { 0 }; i<field.size(); ++i)
     {
         int mineCount { };
-        if(std::find(minePos.begin(), minePos.end(), i - width - 1) != minePos.end() && i - width - 1 > -1 && i - width - 1 < field.size())
-            ++mineCount;
-        if(std::find(minePos.begin(), minePos.end(), i - width) != minePos.end() && i - width > -1 && i - width < field.size())
-            ++mineCount;
-        if(std::find(minePos.begin(), minePos.end(), i - width + 1) != minePos.end() && i - width + 1 > -1 && i - width + 1 < field.size())
-            ++mineCount;
-        if(std::find(minePos.begin(), minePos.end(), i - 1) != minePos.end() && i - 1 > -1 && i - 1 < field.size())
-            ++mineCount;
-        if(std::find(minePos.begin(), minePos.end(), i + 1) != minePos.end() && i + 1 > -1 && i + 1 < field.size())
-            ++mineCount;
-        if(std::find(minePos.begin(), minePos.end(), i + width - 1) != minePos.end() && i + width - 1 > -1 && i + width - 1 < field.size())
-            ++mineCount;
-        if(std::find(minePos.begin(), minePos.end(), i + width) != minePos.end() && i + width > -1 && i + width < field.size())
-            ++mineCount;
-        if(std::find(minePos.begin(), minePos.end(), i + width + 1) != minePos.end() && i + width + 1 > -1 && i + width + 1< field.size())
-            ++mineCount;
+        if(std::find(edges.begin(), edges.end(), i) == edges.end() && std::find(opEdges.begin(), opEdges.end(), i) == opEdges.end())
+        {
+            if(std::find(minePos.begin(), minePos.end(), i - width - 1) != minePos.end() && i - width - 1 > -1 && i - width - 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i - width) != minePos.end() && i - width > -1 && i - width < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i - width + 1) != minePos.end() && i - width + 1 > -1 && i - width + 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i - 1) != minePos.end() && i - 1 > -1 && i - 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i + 1) != minePos.end() && i + 1 > -1 && i + 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i + width - 1) != minePos.end() && i + width - 1 > -1 && i + width - 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i + width) != minePos.end() && i + width > -1 && i + width < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i + width + 1) != minePos.end() && i + width + 1 > -1 && i + width + 1< field.size())
+                ++mineCount;
+        } else if(std::find(opEdges.begin(), opEdges.end(), i) == opEdges.end())
+        {
+            if(std::find(minePos.begin(), minePos.end(), i - width) != minePos.end() && i - width > -1 && i - width < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i - width + 1) != minePos.end() && i - width + 1 > -1 && i - width + 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i + 1) != minePos.end() && i + 1 > -1 && i + 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i + width) != minePos.end() && i + width > -1 && i + width < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i + width + 1) != minePos.end() && i + width + 1 > -1 && i + width + 1< field.size())
+                ++mineCount;
+        } else
+        {
+            if(std::find(minePos.begin(), minePos.end(), i - width - 1) != minePos.end() && i - width - 1 > -1 && i - width - 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i - width) != minePos.end() && i - width > -1 && i - width < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i - 1) != minePos.end() && i - 1 > -1 && i - 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i + width - 1) != minePos.end() && i + width - 1 > -1 && i + width - 1 < field.size())
+                ++mineCount;
+            if(std::find(minePos.begin(), minePos.end(), i + width) != minePos.end() && i + width > -1 && i + width < field.size())
+                ++mineCount;
+        }
 
         field[i] = mineCount;
     }
 
     return field;
+}
+
+std::vector<int> DefineEdges(int width, int height)
+{
+    std::vector<int> edges;
+    int count { 0 };
+    for(int i { }; i<height; ++i)
+    {
+        edges.push_back(count);
+        count += width;
+    }
+
+    return edges;
+}
+
+std::vector<std::array<int, 2>> TilePos(int width, int height, int tileSize, int offset)
+{
+    std::vector<std::array<int, 2>> result;
+    std::array<int, 2> count { offset, offset };
+    for(int i { }; i<width * height; ++i)
+    {
+        result.push_back(count);
+        if((i + 1) % width  == 0)
+        {
+            count[0] = offset;
+            count[1] += tileSize + offset;
+            continue;
+        }
+        count[0] += tileSize + offset;
+    }
+
+    return result;
+}
+
+std::vector<int> TileClicked(int mouseButton, int mouseX, int mouseY, std::vector<int> tileState, std::vector<std::array<int, 2>> tilePos, int tileSize, std::vector<int> field, std::vector<int> edges, int width, int height)
+{
+    std::vector<int> opEdges;
+    for(int i : edges)
+        opEdges.push_back(i + (width - 1));
+    int tileClickedId;
+
+    for(int i { }; i<tilePos.size(); ++i)
+    {
+        if(mouseX > tilePos[i][0] && mouseX < tilePos[i][0] + tileSize && mouseY > tilePos[i][1] && mouseY < tilePos[i][1] + tileSize)
+        {
+            tileClickedId = i;
+            break;
+        }
+    }
+    if(tileClickedId > -1 && tileClickedId < tileState.size() && field[tileClickedId] == 0)
+    {
+        tileState[tileClickedId] = 1;
+        tileState[tileClickedId]
+    } else if(tileClickedId > -1)
+    {
+        tileState[tileClickedId] = 1;
+    }
+
+    return tileState;
 }
