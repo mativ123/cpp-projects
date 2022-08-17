@@ -12,7 +12,7 @@
 #include "../common/images.h"
 
 std::vector<std::array<int, 2>> funktion1(int mouseX, int mouseY, std::vector<std::array<int, 2>> posList);
-void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList);
+void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList, int mouseX, int  mouseY);
 
 int main(int argc, char *argv[])
 {
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         obel.y = mouseY - obel.h / 2;
         obel.draw(renderer);
 
-        drawLines(renderer, posList);
+        drawLines(renderer, posList, mouseX, mouseY);
 
         SDL_RenderPresent(renderer);
     }
@@ -79,7 +79,7 @@ std::vector<std::array<int, 2>> funktion1(int mouseX, int mouseY, std::vector<st
     return posList;
 }
 
-void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList)
+void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList, int mouseX, int  mouseY)
 {
     if(posList.size() >= 2)
     {
@@ -88,5 +88,7 @@ void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList)
             if(i < posList.size() - 1)
                 thickLineRGBA(renderer, posList[i][0], posList[i][1], posList[i + 1][0], posList[i + 1][1], 10, 0, 0, 0, 255);
         }
-    }
+        thickLineRGBA(renderer, posList.back()[0], posList.back()[1], mouseX, mouseY, 10, 0, 0, 0, 255);
+    } else if(posList.size() > 0)
+        thickLineRGBA(renderer, posList[0][0], posList[0][1], mouseX, mouseY, 10, 0, 0, 0, 255);
 }
