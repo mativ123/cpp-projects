@@ -10,9 +10,15 @@
 
 #include "../common/func.cpp"
 #include "../common/images.h"
+#include "json.hpp"
 
-std::vector<std::array<int, 2>> funktion1(int mouseX, int mouseY, std::vector<std::array<int, 2>> posList);
-void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList, int mouseX, int  mouseY);
+using json = nlohmann::json;
+
+std::vector<std::array<int, 2>> funktion1(int mouseX, int mouseY, std::vector<std::array<int, 2>> posList, int windowWidth, int windowHeight);
+void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList, int mouseX, int  mouseY, int windowWidth, int windowHeight);
+void saveToJSON(std::vector<std::array<int, 2>> posList);
+void loadFromJSON();
+std::vector<std::array<int, 2>> loadFromJSON(std::vector<std::array<int, 2>> posList);
 
 int main(int argc, char *argv[])
 {
@@ -46,12 +52,26 @@ int main(int argc, char *argv[])
         {
             if(ev.type == SDL_QUIT)
                 running = false;
-            if(ev.type == SDL_MOUSEBUTTONDOWN)
+            else if(ev.type == SDL_MOUSEBUTTONDOWN)
             {
                 switch(ev.button.button)
                 {
                     case SDL_BUTTON_LEFT:
-                        posList = funktion1(mouseX, mouseY, posList);
+                        posList = funktion1(mouseX, mouseY, posList, windowWidth, windowHeight);
+                        break;
+                }
+            } else if(ev.type == SDL_KEYDOWN)
+            {
+                switch(ev.key.keysym.sym)
+                {
+                    case SDLK_s:
+                        saveToJSON(posList);
+                        break;
+                    case SDLK_l:
+                        posList = loadFromJSON(posList);
+                        break;
+                    case SDLK_r:
+                        posList.clear();
                         break;
                 }
             }
@@ -64,24 +84,51 @@ int main(int argc, char *argv[])
         obel.y = mouseY - obel.h / 2;
         obel.draw(renderer);
 
-        drawLines(renderer, posList, mouseX, mouseY);
+        drawLines(renderer, posList, mouseX, mouseY, windowWidth, windowHeight);
 
         SDL_RenderPresent(renderer);
     }
     return 0;
 }
 
-std::vector<std::array<int, 2>> funktion1(int mouseX, int mouseY, std::vector<std::array<int, 2>> posList)
+std::vector<std::array<int, 2>> funktion1(int mouseX, int mouseY, std::vector<std::array<int, 2>> posList, int windowWidth, int windowHeight)
 {
-    std::array<int, 2> temp { mouseX, mouseY };
-    posList.push_back(temp);
+    if(posList.size() == 0 && mouseX < windowWidth / 2 && mouseY < windowHeight - (windowHeight / 4) && mouseY > windowHeight / 4)
+    {
+        std::array<int, 2> temp { 0, mouseY };
+        posList.push_back(temp);
+    }else if(posList.size() == 0 && mouseX > windowWidth / 2 && mouseY < windowHeight - (windowHeight / 4) && mouseY > windowHeight / 4)
+    {
+        std::array<int, 2> temp { windowWidth, mouseY };
+        posList.push_back(temp);
+    } else if(posList.size() == 0 && mouseY > windowHeight - (windowHeight / 4))
+    {
+        std::array<int, 2> temp { mouseX, windowHeight};
+        posList.push_back(temp);
+    } else if(posList.size() == 0 && mouseY < windowHeight / 4)
+    {
+        std::array<int, 2> temp { mouseX, 0};
+        posList.push_back(temp);
+    } else
+    {
+        std::array<int, 2> temp { mouseX, mouseY };
+        posList.push_back(temp);
+    }
 
     return posList;
 }
 
-void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList, int mouseX, int  mouseY)
+void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList, int mouseX, int  mouseY, int windowWidth, int windowHeight)
 {
-    if(posList.size() >= 2)
+    if(posList.size() == 0 && mouseX < windowWidth / 2 && mouseY < windowHeight - (windowHeight / 4) && mouseY > windowHeight / 4)
+        thickLineRGBA(renderer, 0, mouseY, mouseX, mouseY, 10, 0, 0, 0, 255);
+    else if(posList.size() == 0 && mouseX > windowWidth / 2 && mouseY < windowHeight - (windowHeight / 4) && mouseY > windowHeight / 4)
+        thickLineRGBA(renderer, windowWidth, mouseY, mouseX, mouseY, 10, 0, 0, 0, 255);
+    else if(posList.size() == 0 && mouseY > windowHeight - (windowHeight / 4))
+        thickLineRGBA(renderer, mouseX, windowHeight, mouseX, mouseY, 10, 0, 0, 0, 255);
+    else if(posList.size() == 0 && mouseY < windowHeight / 4)
+        thickLineRGBA(renderer, mouseX, 0, mouseX, mouseY, 10, 0, 0, 0, 255);
+    else if(posList.size() >= 2)
     {
         for(int i { }; i<posList.size(); ++i)
         {
@@ -91,4 +138,26 @@ void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList, 
         thickLineRGBA(renderer, posList.back()[0], posList.back()[1], mouseX, mouseY, 10, 0, 0, 0, 255);
     } else if(posList.size() > 0)
         thickLineRGBA(renderer, posList[0][0], posList[0][1], mouseX, mouseY, 10, 0, 0, 0, 255);
+}
+
+void saveToJSON(std::vector<std::array<int, 2>> posList)
+{
+    json j;
+
+    json j_vec(posList);
+    j["map"] = j_vec;
+
+    std::ofstream o("map.json");
+    o << std::setw(4) << j << '\n';
+}
+
+std::vector<std::array<int, 2>> loadFromJSON(std::vector<std::array<int, 2>> posList)
+{
+    std::ifstream file("map.json");
+    json j;
+    file >> j;
+
+    posList = j["map"];
+
+    return posList;
 }
