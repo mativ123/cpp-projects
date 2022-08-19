@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <array>
+#include <filesystem>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -143,9 +144,16 @@ void drawLines(SDL_Renderer *renderer, std::vector<std::array<int, 2>> posList, 
 void saveToJSON(std::vector<std::array<int, 2>> posList)
 {
     json j;
+    if(std::filesystem::exists("map.json"))
+    {
+        std::ifstream file("map.json");
+        file >> j;
+    }
+
+    int num { static_cast<int>(j.size()) + 1 };
 
     json j_vec(posList);
-    j["map"] = j_vec;
+    j[std::to_string(num)] = j_vec;
 
     std::ofstream o("map.json");
     o << std::setw(4) << j << '\n';
@@ -157,7 +165,8 @@ std::vector<std::array<int, 2>> loadFromJSON(std::vector<std::array<int, 2>> pos
     json j;
     file >> j;
 
-    posList = j["map"];
+
+    posList = j["1"];
 
     return posList;
 }
