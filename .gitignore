@@ -1,2 +1,14 @@
 *.zip
 **/bins\ for\ windows
+
+**/sdl/minesweeper/
+**/sdl/minesweeper/*
+
+**/sdl/obel2d/
+**/sdl/obel2d/*
+
+**/sdl/statusbar/
+**/sdl/statusbar/*
+
+**/sdl/chess/
+**/sdl/chess/*
