@@ -1,9 +1,0 @@
-Package: sdl2-gfx
-Version: 1.0.4
-Port-Version: 8
-Depends: sdl2
-Architecture: x64-windows
-Multi-Arch: same
-Abi: a8024a1722f3f349a863855bb9a8c697a997b5cbba868a6a58f3dae3e3904495
-Description: Graphics primitives (line, circle, rectangle etc.) with AA support, rotozoomer and other drawing related support functions wrapped up in a C based add-on library for the Simple Direct Media (SDL) cross-platform API layer.
-Type: Port
