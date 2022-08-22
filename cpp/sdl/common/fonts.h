@@ -51,4 +51,25 @@ class Text
             text = nullptr;
         }
 
+        void destroyFont()
+        {
+            TTF_CloseFont(font);
+            font = nullptr;
+        }
+
+        void updateSize(SDL_Renderer *rendere)
+        {
+            SDL_Surface *textSurface = TTF_RenderUTF8_Blended_Wrapped(font, textString.c_str(), color, wrapSize);
+            SDL_Texture *text = SDL_CreateTextureFromSurface(rendere, textSurface);
+
+            SDL_QueryTexture(text, NULL, NULL, &textRect.w, &textRect.h);
+            w = textRect.w;
+            h = textRect.h;
+
+            SDL_FreeSurface(textSurface);
+            textSurface = nullptr;
+
+            SDL_DestroyTexture(text);
+            text = nullptr;
+        }
 };
