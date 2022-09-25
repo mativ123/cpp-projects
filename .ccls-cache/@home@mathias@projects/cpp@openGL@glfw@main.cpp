@@ -97,6 +97,9 @@ int main(int argc, char *argv[])
     glClear(GL_COLOR_BUFFER_BIT);
     glfwSwapBuffers(window);
 
+    double x, y;
+    double normX, normY;
+
     // main loop
     while(!glfwWindowShouldClose(window))
     {
@@ -108,6 +111,15 @@ int main(int argc, char *argv[])
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glfwSwapBuffers(window);
+        glfwGetCursorPos(window, &x, &y);
+        normX = (x / windowW) * 2 - 1;
+        normY = ((y / windowH) * 2 - 1) * -1;
+
+        vertices[0] = normX;
+        vertices[1] = normY;
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     }
 
     // clean up

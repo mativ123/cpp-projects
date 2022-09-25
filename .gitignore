@@ -18,3 +18,6 @@
 
 cpp/neural network/dataset/
 cpp/neural network/dataset/*
+
+cpp/openGL/glfw/
+cpp/openGL/glfw/*
