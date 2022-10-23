@@ -1,24 +1,15 @@
 #include <iostream>
-#include <fstream>
 #include <string>
-
+#include <opencv4/opencv2/core.hpp>
+#include <opencv4/opencv2/imgcodecs.hpp>
+#include <opencv4/opencv2/highgui.hpp>
 
 int main(int argc, char *argv[])
 {
-    std::ifstream file;
-    file.open("obelLectio.jpg");
-
-    char str[256];
-
-    if(file.is_open())
-    {
-        file.getline(str, 50);
-
-        std::cout << str << '\n';
-    }
-    else
-        std::cout << "din mor\n";
-
+    cv::Mat img { cv::};
+    cv::imread("obelLectio.jpg", cv::IMREAD_COLOR);
     
+    
+
     return 0;
 }
